@@ -54,14 +54,30 @@ public class DirectRequestDispatcher implements RequestDispatcher {
 			ServletRequest servletRequest, ServletResponse servletResponse)
 		throws IOException, ServletException {
 
-		servletRequest.setAttribute(RequestDispatcher.INCLUDE_PATH_INFO, null);
-		servletRequest.setAttribute(
-			RequestDispatcher.INCLUDE_SERVLET_PATH, _path);
-
-		servletRequest = DynamicServletRequest.addQueryString(
-			(HttpServletRequest)servletRequest, _queryString);
-
-		_servlet.service(servletRequest, servletResponse);
+		Object originalIncludePathInfo = servletRequest.getAttribute(
+			RequestDispatcher.INCLUDE_PATH_INFO);
+		Object originalIncludeServletPath = servletRequest.getAttribute(
+			RequestDispatcher.INCLUDE_SERVLET_PATH);
+		
+		try {
+			
+			servletRequest.setAttribute(
+				RequestDispatcher.INCLUDE_PATH_INFO, null);
+			servletRequest.setAttribute(
+				RequestDispatcher.INCLUDE_SERVLET_PATH, _path);
+	
+			servletRequest = DynamicServletRequest.addQueryString(
+				(HttpServletRequest)servletRequest, _queryString);
+	
+			_servlet.service(servletRequest, servletResponse);
+			
+		} finally {
+			servletRequest.setAttribute(
+				RequestDispatcher.INCLUDE_PATH_INFO, originalIncludePathInfo);
+			servletRequest.setAttribute(
+				RequestDispatcher.INCLUDE_SERVLET_PATH,
+				originalIncludeServletPath);
+		}
 	}
 
 	private final String _path;
